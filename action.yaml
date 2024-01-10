@@ -1,0 +1,19 @@
+name: "Create Database Branch"
+description: "Create a new database from an existing database."
+inputs:
+  organization-name:
+    description: "The name of the organization or account the database belongs to."
+    required: true
+  database-name:
+    description: "The name of the existing database."
+    required: true
+  new-database-name:
+    description: "The name of the new database to create."
+    required: true
+runs:
+  using: "node20"
+  main: "index.js"
+  args:
+    - ${{ inputs.organization_name }}
+    - ${{ inputs.database_name }}
+    - ${{ inputs.branch_name }}

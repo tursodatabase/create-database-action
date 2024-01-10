@@ -1,0 +1,13 @@
+name: Create database for branch
+on: create
+
+jobs:
+  create_branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create database for branch
+        uses: notrab/turso-create-branch-action@v1
+        with:
+          organization_name: ${{ secrets.TURSO_ORGANIZATION_NAME }}
+          database_name: ${{ secrets.TURSO_DATABASE_NAME }}
+          branch_name: "${{ github.sha }}"
