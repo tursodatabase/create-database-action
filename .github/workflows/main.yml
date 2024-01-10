@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create database for branch
-        uses: notrab/turso-create-branch-action@v1
+        uses: notrab/turso-create-branch-action@v0.1
         with:
           organization_name: ${{ secrets.TURSO_ORGANIZATION_NAME }}
           database_name: ${{ secrets.TURSO_DATABASE_NAME }}
