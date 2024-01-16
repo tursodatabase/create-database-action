@@ -1,0 +1,84 @@
+name: "Create Turso Database"
+
+description: "Automatically create and clone a Turso database, with the option to restore from a specified point in time."
+
+author: "Turso"
+
+branding:
+  color: "green"
+  icon: "database"
+
+inputs:
+  organization_name:
+    description: "The name of the organization or account where this action will be performed."
+    required: true
+  api_token:
+    description: "The API key that has access to the organization or account."
+    required: true
+  existing_database_name:
+    description: "The name of the existing database."
+    required: true
+  new_database_name:
+    description: "The new database name."
+    required: true
+  group_name:
+    description: "The group name the database should be created in."
+    required: false
+
+outputs:
+  hostname:
+    description: "The database hostname without protocol."
+    value: ${{ steps.create-database.outputs.hostname }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Group
+      id: get-group
+      if: inputs.group_name == ''
+      shell: bash
+      run: |
+        RESPONSE=$(curl -s -f \
+          -H "Authorization: Bearer ${{ inputs.api_token }}" \
+          "https://api.turso.tech/v1/organizations/${{ inputs.organization_name }}/databases/${{ inputs.existing_database_name }}")
+
+        if [ $? -ne 0 ]; then
+          echo "Could not fetch database"
+          exit 1
+        fi
+
+        GROUP_NAME=$(echo $RESPONSE | jq -r '.database.group')
+        if [ -z "$GROUP_NAME" ]; then
+          echo "Group name not found in response"
+          exit 1
+        fi
+
+        echo "GROUP_NAME=$GROUP_NAME" >> $GITHUB_ENV
+    - name: Create Database
+      id: create-database
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.group_name }}" ]; then
+          GROUP_TO_USE=$GROUP_NAME
+        else
+          GROUP_TO_USE="${{ inputs.group_name }}"
+        fi
+
+        RESPONSE=$(curl -s -f -X POST \
+          -H "Authorization: Bearer ${{ inputs.api_token }}" \
+          -H "Content-Type: application/json" \
+          -d '{"name": "${{ github.ref_name }}", "group": "'"$GROUP_TO_USE"'", "seed": {"type": "database", "name": "${{ inputs.existing_database_name }}"} }' \
+          "https://api.turso.tech/v1/organizations/${{ inputs.organization_name }}/databases")
+
+        if [ $? -ne 0 ]; then
+          echo "Could not create database"
+          exit 1
+        fi
+
+        HOSTNAME=$(echo $RESPONSE | jq -r '.database.Hostname')
+        if [ -z "$HOSTNAME" ]; then
+          echo "Hostname not found in response"
+          exit 1
+        fi
+
+        echo "hostname=$HOSTNAME" >> $GITHUB_OUTPUT
