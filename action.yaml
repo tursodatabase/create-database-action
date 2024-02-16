@@ -67,7 +67,7 @@ runs:
         RESPONSE=$(curl -s -f -X POST \
           -H "Authorization: Bearer ${{ inputs.api_token }}" \
           -H "Content-Type: application/json" \
-          -d '{"name": "${{ github.ref_name }}", "group": "'"$GROUP_TO_USE"'", "seed": {"type": "database", "name": "${{ inputs.existing_database_name }}"} }' \
+          -d '{"name": "${{ inputs.new_database_name }}", "group": "'"$GROUP_TO_USE"'", "seed": {"type": "database", "name": "${{ inputs.existing_database_name }}"} }' \
           "https://api.turso.tech/v1/organizations/${{ inputs.organization_name }}/databases")
 
         if [ $? -ne 0 ]; then
