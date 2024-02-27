@@ -65,8 +65,14 @@ runs:
         fi
 
         if [ -z "${{ inputs.new_database_name }}" ]; then
-          NEW_DATABASE_NAME_TO_USE=pr-${{ github.ref_name }}
-          NEW_DATABASE_NAME_TO_USE=${NEW_DATABASE_NAME_TO_USE//"\/merge"/}}
+          NEW_DATABASE_NAME_TO_USE=${{ github.ref_name }}
+
+          # Reformat NEW_DATABASE_NAME_TO_USE in case of a PR to adhere to naming rules,
+          # since github.ref_name evaluates to <pr#>/merge in case of a PR (which is not a valid name).
+          # It gets reformatted to pr-<pr#>
+          if [[ "$NEW_DATABASE_NAME_TO_USE" = */merge ]]; then
+            NEW_DATABASE_NAME_TO_USE=pr-${NEW_DATABASE_NAME_TO_USE//"\/merge"/}}
+          fi
         else
           NEW_DATABASE_NAME_TO_USE=${{ inputs.new_database_name }}
         fi
